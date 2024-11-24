@@ -1,40 +1,34 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "produto.h"
 
-// Lista dinâmica de produtos
-Produto *produtos = NULL;
+// Definições das variáveis 
+int produto_ids[MAX_PRODUTOS];
+char produto_nomes[MAX_PRODUTOS][TAM_NOME_PROD];
+char produto_categorias[MAX_PRODUTOS][TAM_CATEGORIA];
+int produto_quantidades[MAX_PRODUTOS];
+float produto_precos[MAX_PRODUTOS];
 int total_produtos_cadastrados = 0;
 
 void criar_produto() {
+    if (total_produtos_cadastrados >= MAX_PRODUTOS) {
+        printf("Limite máximo de produtos alcançado.\n");
+        return;
+    }
+
+    produto_ids[total_produtos_cadastrados] = total_produtos_cadastrados + 1;
+
     printf("\n--- Criar Produto ---\n");
-
-    // Realocação dinâmica para um novo produto
-    produtos = realloc(produtos, (total_produtos_cadastrados + 1) * sizeof(Produto));
-
-    Produto *novo_produto = &produtos[total_produtos_cadastrados];
-    novo_produto->id = total_produtos_cadastrados + 1;
-
     printf("Nome do Produto: ");
-    scanf(" %[^\n]s", novo_produto->nome);
+    scanf(" %[^\n]s", produto_nomes[total_produtos_cadastrados]);
 
     printf("Categoria do Produto: ");
-    scanf(" %[^\n]s", novo_produto->categoria);
+    scanf(" %[^\n]s", produto_categorias[total_produtos_cadastrados]);
 
-    printf("Número de Processos: ");
-    scanf("%d", &novo_produto->num_processos);
+    printf("Quantidade em Estoque: ");
+    scanf("%d", &produto_quantidades[total_produtos_cadastrados]);
 
-    // Alocação para processos
-    novo_produto->processos = malloc(novo_produto->num_processos * sizeof(Processo));
-
-    for (int i = 0; i < novo_produto->num_processos; i++) {
-        printf("ID da Máquina para o Processo %d: ", i + 1);
-        scanf("%d", &novo_produto->processos[i].id_maquina);
-
-        printf("Tempo de Execução (minutos): ");
-        scanf("%d", &novo_produto->processos[i].tempo_execucao);
-    }
+    printf("Preço do Produto: ");
+    scanf("%f", &produto_precos[total_produtos_cadastrados]);
 
     total_produtos_cadastrados++;
     printf("Produto cadastrado com sucesso!\n");
@@ -42,21 +36,16 @@ void criar_produto() {
 
 void listar_produtos() {
     printf("\n--- Lista de Produtos ---\n");
+
     if (total_produtos_cadastrados == 0) {
         printf("Nenhum produto cadastrado.\n");
         return;
     }
 
     for (int i = 0; i < total_produtos_cadastrados; i++) {
-        Produto *p = &produtos[i];
-        printf("ID: %d | Nome: %s | Categoria: %s\n", p->id, p->nome, p->categoria);
-        printf("Processos:\n");
-
-        for (int j = 0; j < p->num_processos; j++) {
-            printf("  Máquina: %d | Tempo: %d minutos\n", 
-                   p->processos[j].id_maquina, 
-                   p->processos[j].tempo_execucao);
-        }
+        printf("ID: %d | Nome: %s | Categoria: %s | Quantidade: %d | Preço: %.2f\n",
+               produto_ids[i], produto_nomes[i], produto_categorias[i],
+               produto_quantidades[i], produto_precos[i]);
     }
 }
 
@@ -71,30 +60,17 @@ void atualizar_produto() {
         return;
     }
 
-    Produto *p = &produtos[id - 1];
-    printf("Novo Nome (atual: %s): ", p->nome);
-    scanf(" %[^\n]s", p->nome);
+    printf("Novo Nome (atual: %s): ", produto_nomes[id - 1]);
+    scanf(" %[^\n]s", produto_nomes[id - 1]);
 
-    printf("Nova Categoria (atual: %s): ", p->categoria);
-    scanf(" %[^\n]s", p->categoria);
+    printf("Nova Categoria (atual: %s): ", produto_categorias[id - 1]);
+    scanf(" %[^\n]s", produto_categorias[id - 1]);
 
-    printf("Número de Processos (atual: %d): ", p->num_processos);
-    int novos_processos;
-    scanf("%d", &novos_processos);
+    printf("Nova Quantidade (atual: %d): ", produto_quantidades[id - 1]);
+    scanf("%d", &produto_quantidades[id - 1]);
 
-    if (novos_processos != p->num_processos) {
-        free(p->processos); // Liberar memória atual
-        p->processos = malloc(novos_processos * sizeof(Processo));
-        p->num_processos = novos_processos;
-    }
-
-    for (int i = 0; i < p->num_processos; i++) {
-        printf("ID da Máquina para o Processo %d: ", i + 1);
-        scanf("%d", &p->processos[i].id_maquina);
-
-        printf("Tempo de Execução (minutos): ");
-        scanf("%d", &p->processos[i].tempo_execucao);
-    }
+    printf("Novo Preço (atual: %.2f): ", produto_precos[id - 1]);
+    scanf("%f", &produto_precos[id - 1]);
 
     printf("Produto atualizado com sucesso!\n");
 }
@@ -110,16 +86,19 @@ void excluir_produto() {
         return;
     }
 
-    // Liberar memória dos processos associados
-    free(produtos[id - 1].processos);
+    for (int i = id - 1; i < total_produtos_cadastrados - 1; i++) {
+        produto_ids[i] = produto_ids[i + 1];
 
-    for (int i = id; i < total_produtos_cadastrados; i++) {
-        produtos[i - 1] = produtos[i];
+        for (int j = 0; j < TAM_NOME_PROD; j++) {
+            produto_nomes[i][j] = produto_nomes[i + 1][j];
+        }
+        for (int j = 0; j < TAM_CATEGORIA; j++) {
+            produto_categorias[i][j] = produto_categorias[i + 1][j];
+        }
+        produto_quantidades[i] = produto_quantidades[i + 1];
+        produto_precos[i] = produto_precos[i + 1];
     }
-
-    total_produtos_cadastrados--;
-    produtos = realloc(produtos, total_produtos_cadastrados * sizeof(Produto));
-
+total_produtos_cadastrados--;
     printf("Produto excluído com sucesso!\n");
 }
 
@@ -129,25 +108,36 @@ void total_produtos() {
 
 void produtos_por_categoria() {
     printf("\n--- Produtos por Categoria ---\n");
-    if (total_produtos_cadastrados == 0) {
-        printf("Nenhum produto cadastrado.\n");
-        return;
-    }
+    char categoria[TAM_CATEGORIA];
+    int encontrados = 0;
 
-    char categoria[20];
-    printf("Informe a categoria: ");
+    printf("Informe a categoria para listar os produtos: ");
     scanf(" %[^\n]s", categoria);
 
     for (int i = 0; i < total_produtos_cadastrados; i++) {
-        Produto *p = &produtos[i];
-        if (strcmp(p->categoria, categoria) == 0) {
-            printf("ID: %d | Nome: %s\n", p->id, p->nome);
+       
+        int iguais = 1;
+        for (int j = 0; j < TAM_CATEGORIA && categoria[j] != '\0'; j++) {
+            if (categoria[j] != produto_categorias[i][j]) {
+                iguais = 0;
+                break;
+            }
         }
+
+        if (iguais) {
+            printf("ID: %d | Nome: %s | Quantidade: %d | Preço: %.2f\n",
+                   produto_ids[i], produto_nomes[i], produto_quantidades[i], produto_precos[i]);
+            encontrados++;
+        }
+    }
+
+    if (encontrados == 0) {
+        printf("Nenhum produto encontrado na categoria '%s'.\n", categoria);
     }
 }
 
 void produtos_mais_menos_procurados() {
-    printf("\n--- Produtos Mais e Menos Procurados ---\n");
-    // Placeholder para análise (não implementado por falta de dados de "procura").
+    printf("\n--- Produtos Mais/Menos Procurados ---\n");
     printf("Função em desenvolvimento.\n");
+    
 }
