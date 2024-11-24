@@ -1,16 +1,14 @@
 #ifndef CLIENTE_H
 #define CLIENTE_H
 
-// Estrutura para armazenar informações de clientes
-typedef struct {
-    int id;               // ID único do cliente
-    char nome[50];        // Nome do cliente
-    char contato[50];     // Contato (e-mail ou telefone)
-    char nif[15];         // Número de identificação fiscal
-    char data_registro[11]; // Data de registro no formato "dd/mm/aaaa"
-} Cliente;
+// Máximo de clientes e tamanho máximo dos campos
+#define MAX_CLIENTES 100
+#define TAM_NOME 50
+#define TAM_CONTATO 50
+#define TAM_NIF 15
+#define TAM_DATA 11
 
-// Prototipação das funções do módulo Cliente
+// Protótipos das funções relacionadas a clientes
 void criar_cliente();
 void listar_clientes();
 void atualizar_cliente();
