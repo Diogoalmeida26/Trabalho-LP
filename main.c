@@ -202,3 +202,4 @@ void menu_maquina() {
         }
     } while (opcao != 0);
 }
+return 0
