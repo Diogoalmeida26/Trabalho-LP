@@ -1,76 +1,38 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "produto.h" // Inclui as definições e funções de produtos
+#include "cliente.h" // Incluir cliente.h para integrar funções
 
-// Prototipação dos submenus
-void menu_produto();
-
-int main() {
+void menu_cliente() {
     int opcao;
 
     do {
-        printf("\n--- Sistema de Gestão de Encomendas ---\n");
-        printf("1. Gestão de Produtos\n");
-        printf("2. Gestão de Clientes (Em Desenvolvimento)\n");
-        printf("3. Gestão de Encomendas (Em Desenvolvimento)\n");
-        printf("4. Gestão de Máquinas (Em Desenvolvimento)\n");
-        printf("0. Sair\n");
-        printf("Escolha uma opção: ");
-        scanf("%d", &opcao);
-
-        switch (opcao) {
-            case 1:
-                menu_produto();
-                break;
-            case 0:
-                printf("Saindo do sistema...\n");
-                break;
-            default:
-                printf("Opção inválida! Tente novamente.\n");
-        }
-    } while (opcao != 0);
-
-    return 0;
-}
-
-// Submenu de Gestão de Produtos
-void menu_produto() {
-    int opcao;
-
-    do {
-        printf("\n--- Gestão de Produtos ---\n");
-        printf("1. Criar Produto\n");
-        printf("2. Listar Produtos\n");
-        printf("3. Atualizar Produto\n");
-        printf("4. Excluir Produto\n");
-        printf("5. Total de Produtos\n");
-        printf("6. Produtos por Categoria\n");
-        printf("7. Produtos Mais/Menos Procurados\n");
+        printf("\n--- Gestão de Clientes ---\n");
+        printf("1. Criar Cliente\n");
+        printf("2. Listar Clientes\n");
+        printf("3. Atualizar Cliente\n");
+        printf("4. Excluir Cliente\n");
+        printf("5. Total de Clientes\n");
+        printf("6. Clientes Mais Ativos\n");
         printf("0. Voltar ao Menu Principal\n");
         printf("Escolha uma opção: ");
         scanf("%d", &opcao);
 
         switch (opcao) {
             case 1:
-                criar_produto();
+                criar_cliente();
                 break;
             case 2:
-                listar_produtos();
+                listar_clientes();
                 break;
             case 3:
-                atualizar_produto();
+                atualizar_cliente();
                 break;
             case 4:
-                excluir_produto();
+                excluir_cliente();
                 break;
             case 5:
-                total_produtos();
+                total_clientes();
                 break;
             case 6:
-                produtos_por_categoria();
-                break;
-            case 7:
-                produtos_mais_menos_procurados();
+                clientes_mais_ativos();
                 break;
             case 0:
                 printf("Voltando ao menu principal...\n");
