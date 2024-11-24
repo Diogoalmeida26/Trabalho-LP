@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "produto.h" // Inclui as definições e funções de produtos
+#include "cliente.h"
+#include "encomenda.h"
+#include "maquina.h"
 
 // Prototipação dos submenus
 void menu_produto();
