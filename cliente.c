@@ -1,115 +1,121 @@
-#include <stdio.h>
 #include "cliente.h"
+#include <string.h>
 
-// Variáveis globais específicas deste arquivo
-int cliente_ids[MAX_CLIENTES];
-char cliente_nomes[MAX_CLIENTES][TAM_NOME];
-char cliente_contatos[MAX_CLIENTES][TAM_CONTATO];
-char cliente_nifs[MAX_CLIENTES][TAM_NIF];
-char cliente_datas_registro[MAX_CLIENTES][TAM_DATA];
-int total_clientes_cadastrados = 0;
+// Arrays fixos para armazenar os dados dos clientes
+int ids[MAX_CLIENTES];
+char nomes[MAX_CLIENTES][TAM_NOME];
+char contatos[MAX_CLIENTES][TAM_CONTATO];
+char nifs[MAX_CLIENTES][TAM_NIF];
+char datas_registro[MAX_CLIENTES][TAM_DATA];
+int atividades[MAX_CLIENTES]; // Contador de encomendas para identificar clientes ativos
+int total_clientes = 0;
 
-void criar_cliente() {
-    if (total_clientes_cadastrados >= MAX_CLIENTES) {
-        printf("Limite máximo de clientes alcançado.\n");
-        return;
-    }
-
-    cliente_ids[total_clientes_cadastrados] = total_clientes_cadastrados + 1;
-
-    printf("\n--- Criar Cliente ---\n");
-    printf("Nome do Cliente: ");
-    scanf(" %[^\n]s", cliente_nomes[total_clientes_cadastrados]);
-
-    printf("Contato (E-mail ou Telefone): ");
-    scanf(" %[^\n]s", cliente_contatos[total_clientes_cadastrados]);
-
-    printf("NIF (Número de Identificação Fiscal): ");
-    scanf(" %[^\n]s", cliente_nifs[total_clientes_cadastrados]);
-
-    printf("Data de Registro (dd/mm/aaaa): ");
-    scanf(" %[^\n]s", cliente_datas_registro[total_clientes_cadastrados]);
-
-    total_clientes_cadastrados++;
-    printf("Cliente cadastrado com sucesso!\n");
-}
-
-void listar_clientes() {
-    printf("\n--- Lista de Clientes ---\n");
-
-    if (total_clientes_cadastrados == 0) {
-        printf("Nenhum cliente cadastrado.\n");
-        return;
-    }
-
-    for (int i = 0; i < total_clientes_cadastrados; i++) {
-        printf("ID: %d | Nome: %s | Contato: %s | NIF: %s | Data de Registro: %s\n",
-               cliente_ids[i], cliente_nomes[i], cliente_contatos[i], cliente_nifs[i], cliente_datas_registro[i]);
+// Criar um novo cliente
+void criar_cliente(int id, const char nome[TAM_NOME], const char contato[TAM_CONTATO], const char nif[TAM_NIF], const char data[TAM_DATA]) {
+    if (total_clientes < MAX_CLIENTES) {
+        ids[total_clientes] = id;
+        for (int i = 0; i < TAM_NOME; i++) {
+            nomes[total_clientes][i] = nome[i];
+            if (nome[i] == '\0') break;
+        }
+        for (int i = 0; i < TAM_CONTATO; i++) {
+            contatos[total_clientes][i] = contato[i];
+            if (contato[i] == '\0') break;
+        }
+        for (int i = 0; i < TAM_NIF; i++) {
+            nifs[total_clientes][i] = nif[i];
+            if (nif[i] == '\0') break;
+        }
+        for (int i = 0; i < TAM_DATA; i++) {
+            datas_registro[total_clientes][i] = data[i];
+            if (data[i] == '\0') break;
+        }
+        atividades[total_clientes] = 0;
+        total_clientes++;
     }
 }
 
-void atualizar_cliente() {
-    printf("\n--- Atualizar Cliente ---\n");
-    int id;
-    printf("Informe o ID do Cliente para atualizar: ");
-    scanf("%d", &id);
 
-    if (id <= 0 || id > total_clientes_cadastrados) {
-        printf("Cliente não encontrado.\n");
-        return;
-    }
-
-    printf("Novo Nome (atual: %s): ", cliente_nomes[id - 1]);
-    scanf(" %[^\n]s", cliente_nomes[id - 1]);
-
-    printf("Novo Contato (atual: %s): ", cliente_contatos[id - 1]);
-    scanf(" %[^\n]s", cliente_contatos[id - 1]);
-
-    printf("Novo NIF (atual: %s): ", cliente_nifs[id - 1]);
-    scanf(" %[^\n]s", cliente_nifs[id - 1]);
-
-    printf("Nova Data de Registro (atual: %s): ", cliente_datas_registro[id - 1]);
-    scanf(" %[^\n]s", cliente_datas_registro[id - 1]);
-
-    printf("Cliente atualizado com sucesso!\n");
-}
-
-void excluir_cliente() {
-    printf("\n--- Excluir Cliente ---\n");
-    int id;
-    printf("Informe o ID do Cliente para excluir: ");
-    scanf("%d", &id);
-
-    if (id <= 0 || id > total_clientes_cadastrados) {
-        printf("Cliente não encontrado.\n");
-        return;
-    }
-
-    for (int i = id - 1; i < total_clientes_cadastrados - 1; i++) {
-        cliente_ids[i] = cliente_ids[i + 1];
+// Listar todos os clientes
+void listar_clientes(char lista[MAX_CLIENTES][TAM_NOME], int *quantidade) {
+    *quantidade = total_clientes;
+    for (int i = 0; i < total_clientes; i++) {
         for (int j = 0; j < TAM_NOME; j++) {
-            cliente_nomes[i][j] = cliente_nomes[i + 1][j];
+            lista[i][j] = nomes[i][j];
         }
-        for (int j = 0; j < TAM_CONTATO; j++) {
-            cliente_contatos[i][j] = cliente_contatos[i + 1][j];
+    }
+}
+
+// Atualizar o contato de um cliente
+void atualizar_cliente(int id, const char novo_contato[TAM_CONTATO]) {
+    for (int i = 0; i < total_clientes; i++) {
+        if (ids[i] == id) {
+            for (int j = 0; j < TAM_CONTATO; j++) {
+                contatos[i][j] = novo_contato[j];
+                if (novo_contato[j] == '\0') break;
+            }
+            return;
         }
-        for (int j = 0; j < TAM_NIF; j++) {
-            cliente_nifs[i][j] = cliente_nifs[i + 1][j];
+    }
+}
+
+// Excluir um cliente
+void excluir_cliente(int id) {
+    for (int i = 0; i < total_clientes; i++) {
+        if (ids[i] == id) {
+            for (int j = i; j < total_clientes - 1; j++) {
+                ids[j] = ids[j + 1];
+                for (int k = 0; k < TAM_NOME; k++) {
+                    nomes[j][k] = nomes[j + 1][k];
+                }
+                for (int k = 0; k < TAM_CONTATO; k++) {
+                    contatos[j][k] = contatos[j + 1][k];
+                }
+                for (int k = 0; k < TAM_NIF; k++) {
+                    nifs[j][k] = nifs[j + 1][k];
+                }
+                for (int k = 0; k < TAM_DATA; k++) {
+                    datas_registro[j][k] = datas_registro[j + 1][k];
+                }
+                atividades[j] = atividades[j + 1];
+            }
+            total_clientes--;
+            return;
         }
-        for (int j = 0; j < TAM_DATA; j++) {
-            cliente_datas_registro[i][j] = cliente_datas_registro[i + 1][j];
+    }
+}
+
+// Obter o total de clientes
+int obter_total_clientes() {
+    return total_clientes;
+}
+
+
+// Identificar os clientes mais ativos
+void clientes_mais_ativos(char lista[MAX_CLIENTES][TAM_NOME], int *quantidade) {
+    if (total_clientes == 0) {
+        *quantidade = 0;
+        return;
+    }
+
+    int maior_atividade = atividades[0];
+    for (int i = 1; i < total_clientes; i++) {
+        if (atividades[i] > maior_atividade) {
+            maior_atividade = atividades[i];
         }
     }
 
-    total_clientes_cadastrados--;
-    printf("Cliente excluído com sucesso!\n");
+    *quantidade = 0;
+    for (int i = 0; i < total_clientes; i++) {
+        if (atividades[i] == maior_atividade) {
+            for (int j = 0; j < TAM_NOME; j++) {
+                lista[*quantidade][j] = nomes[i][j];
+            }
+            (*quantidade)++;
+        }
+    }
 }
+// Renomeie a variável
+int num_clientes = 0;
 
-void total_clientes() {
-    printf("\nTotal de Clientes Cadastrados: %d\n", total_clientes_cadastrados);
-}
 
-void clientes_mais_ativos() {
-    printf("\n--- Clientes Mais Ativos ---\n");
-    printf("Função em desenvolvimento.\n");
-}
