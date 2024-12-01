@@ -82,12 +82,3 @@ void excluir_encomenda(int id) {
         total_encomendas_registradas--;
     }
 }
-
-// Função para gerar relatório de estados
-void relatorio_encomendas_por_estado(int *abertas, int *producao, int *finalizadas) {
-    *abertas = 0;
-    *producao = 0;
-    *finalizadas = 0;
-    for (int i = 0; i < total_encomendas_registradas; i++) {
-        if (encomenda_estados[i] == 0) (*abertas)++;
-        else if
