@@ -1,76 +1,52 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include "encomenda.h"
+#include "encomendas.h"
 
-// Lista dinâmica de encomendas
-Encomenda *encomendas = NULL;
-int total_encomendas = 0;
-
-// Função auxiliar para obter a data atual no formato "dd/mm/aaaa"
-void obter_data_atual(char *data) {
-    time_t t = time(NULL);
-    struct tm tm = *localtime(&t);
-    sprintf(data, "%02d/%02d/%04d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
-}
+// Variáveis 
+int encomenda_ids[MAX_ENCOMENDAS];
+int encomenda_clientes[MAX_ENCOMENDAS];
+char encomenda_datas_criacao[MAX_ENCOMENDAS][TAM_DATA];
+int encomenda_prioridades[MAX_ENCOMENDAS]; // 0: Baixa, 1: Média, 2: Alta
+int encomenda_estados[MAX_ENCOMENDAS]; // 0: Aberta, 1: Produção, 2: Finalizada
+float encomenda_taxas_cumprimento[MAX_ENCOMENDAS];
+int total_encomendas_registradas = 0;
 
 void criar_encomenda() {
-    printf("\n--- Criar Encomenda ---\n");
-
-    // Realocação dinâmica para uma nova encomenda
-    encomendas = realloc(encomendas, (total_encomendas + 1) * sizeof(Encomenda));
-    Encomenda *nova_encomenda = &encomendas[total_encomendas];
-    nova_encomenda->id = total_encomendas + 1;
-
-    // Associar a um cliente existente
-    printf("ID do Cliente: ");
-    scanf("%d", &nova_encomenda->id_cliente);
-
-    // Obter a data de criação
-    obter_data_atual(nova_encomenda->data_criacao);
-
-    printf("Prioridade (Baixa, Média, Alta): ");
-    scanf(" %[^\n]s", nova_encomenda->prioridade);
-
-    strcpy(nova_encomenda->estado, "Aberta"); // Estado inicial
-    nova_encomenda->taxa_cumprimento = 0.0;
-
-    // Adicionar itens à encomenda
-    printf("Número de Itens na Encomenda: ");
-    scanf("%d", &nova_encomenda->num_itens);
-
-    nova_encomenda->itens = malloc(nova_encomenda->num_itens * sizeof(ItemEncomenda));
-    for (int i = 0; i < nova_encomenda->num_itens; i++) {
-        printf("ID do Produto %d: ", i + 1);
-        scanf("%d", &nova_encomenda->itens[i].id_produto);
-
-        printf("Quantidade do Produto %d: ", i + 1);
-        scanf("%d", &nova_encomenda->itens[i].quantidade);
+    if (total_encomendas_registradas >= MAX_ENCOMENDAS) {
+        printf("Limite máximo de encomendas alcançado.\n");
+        return;
     }
 
-    total_encomendas++;
+    printf("\n--- Criar Encomenda ---\n");
+    encomenda_ids[total_encomendas_registradas] = total_encomendas_registradas + 1;
+
+    printf("ID do Cliente: ");
+    scanf("%d", &encomenda_clientes[total_encomendas_registradas]);
+
+    printf("Prioridade (0: Baixa, 1: Média, 2: Alta): ");
+    scanf("%d", &encomenda_prioridades[total_encomendas_registradas]);
+
+    encomenda_estados[total_encomendas_registradas] = 0; // Estado inicial: Aberta
+    encomenda_taxas_cumprimento[total_encomendas_registradas] = 0.0;
+
+    printf("Data de Criação (dd/mm/aaaa): ");
+    scanf("%s", encomenda_datas_criacao[total_encomendas_registradas]);
+
+    total_encomendas_registradas++;
     printf("Encomenda criada com sucesso!\n");
 }
 
 void listar_encomendas() {
     printf("\n--- Lista de Encomendas ---\n");
 
-    if (total_encomendas == 0) {
-        printf("Nenhuma encomenda cadastrada.\n");
+    if (total_encomendas_registradas == 0) {
+        printf("Nenhuma encomenda registrada.\n");
         return;
     }
 
-    for (int i = 0; i < total_encomendas; i++) {
-        Encomenda *e = &encomendas[i];
-        printf("ID: %d | Cliente: %d | Data: %s | Prioridade: %s | Estado: %s | Progresso: %.2f%%\n",
-               e->id, e->id_cliente, e->data_criacao, e->prioridade, e->estado, e->taxa_cumprimento);
-
-        printf("Itens:\n");
-        for (int j = 0; j < e->num_itens; j++) {
-            printf("  Produto: %d | Quantidade: %d\n",
-                   e->itens[j].id_produto, e->itens[j].quantidade);
-        }
+    for (int i = 0; i < total_encomendas_registradas; i++) {
+        printf("ID: %d | Cliente: %d | Data: %s | Prioridade: %d | Estado: %d | Taxa: %.2f%%\n",
+               encomenda_ids[i], encomenda_clientes[i], encomenda_datas_criacao[i],
+               encomenda_prioridades[i], encomenda_estados[i], encomenda_taxas_cumprimento[i]);
     }
 }
 
@@ -80,21 +56,19 @@ void atualizar_encomenda() {
     printf("Informe o ID da Encomenda para atualizar: ");
     scanf("%d", &id);
 
-    if (id <= 0 || id > total_encomendas) {
+    if (id <= 0 || id > total_encomendas_registradas) {
         printf("Encomenda não encontrada.\n");
         return;
     }
 
-    Encomenda *e = &encomendas[id - 1];
-    printf("Novo Estado (atual: %s): ", e->estado);
-    scanf(" %[^\n]s", e->estado);
+    printf("Novo Estado (0: Aberta, 1: Produção, 2: Finalizada): ");
+    scanf("%d", &encomenda_estados[id - 1]);
 
-    if (strcmp(e->estado, "Finalizada") == 0) {
-        e->taxa_cumprimento = 100.0;
-    } else if (strcmp(e->estado, "Produção") == 0) {
-        e->taxa_cumprimento = 50.0; // Exemplo de progresso padrão
-    } else {
-        e->taxa_cumprimento = 0.0;
+    if (encomenda_estados[id - 1] == 2) { // finalizada
+        encomenda_taxas_cumprimento[id - 1] = 100.0;
+    } else if (encomenda_estados[id - 1] == 1) { //  Em produção
+        printf("Informe a nova Taxa de Cumprimento (0-99): ");
+        scanf("%f", &encomenda_taxas_cumprimento[id - 1]);
     }
 
     printf("Encomenda atualizada com sucesso!\n");
@@ -106,33 +80,39 @@ void excluir_encomenda() {
     printf("Informe o ID da Encomenda para excluir: ");
     scanf("%d", &id);
 
-    if (id <= 0 || id > total_encomendas) {
+    if (id <= 0 || id > total_encomendas_registradas) {
         printf("Encomenda não encontrada.\n");
         return;
     }
 
-    free(encomendas[id - 1].itens); // Liberar memória dos itens
+    for (int i = id - 1; i < total_encomendas_registradas - 1; i++) {
+        encomenda_ids[i] = encomenda_ids[i + 1];
+        encomenda_clientes[i] = encomenda_clientes[i + 1];
 
-    for (int i = id; i < total_encomendas; i++) {
-        encomendas[i - 1] = encomendas[i];
+        for (int j = 0; j < TAM_DATA; j++) {
+            encomenda_datas_criacao[i][j] = encomenda_datas_criacao[i + 1][j];
+        }
+
+        encomenda_prioridades[i] = encomenda_prioridades[i + 1];
+        encomenda_estados[i] = encomenda_estados[i + 1];
+        encomenda_taxas_cumprimento[i] = encomenda_taxas_cumprimento[i + 1];
     }
 
-    total_encomendas--;
-    encomendas = realloc(encomendas, total_encomendas * sizeof(Encomenda));
-
+    total_encomendas_registradas--;
     printf("Encomenda excluída com sucesso!\n");
 }
 
-void listar_encomendas_por_estado() {
-    printf("\n--- Encomendas por Estado ---\n");
-    char estado[15];
-    printf("Informe o estado (Aberta, Produção, Finalizada): ");
-    scanf(" %[^\n]s", estado);
+void relatorio_encomendas_por_estado() {
+    int abertas = 0, producao = 0, finalizadas = 0;
 
-    for (int i = 0; i < total_encomendas; i++) {
-        if (strcmp(encomendas[i].estado, estado) == 0) {
-            printf("ID: %d | Cliente: %d | Data: %s | Prioridade: %s\n",
-                   encomendas[i].id, encomendas[i].id_cliente, encomendas[i].data_criacao, encomendas[i].prioridade);
-        }
+    for (int i = 0; i < total_encomendas_registradas; i++) {
+        if (encomenda_estados[i] == 0) abertas++;
+        else if (encomenda_estados[i] == 1) producao++;
+        else if (encomenda_estados[i] == 2) finalizadas++;
     }
+
+    printf("\n--- Relatório de Encomendas por Estado ---\n");
+    printf("Abertas: %d | Produção: %d | Finalizadas: %d\n", abertas, producao, finalizadas);
+}
+   
 }
