@@ -3,14 +3,27 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <stdlib.h>
-#define VALOR_INVALIDO "O valor inserido é inválido"
-#define MAX_INT 2147483647
-#define SIZE_BUFFER 100
-#define MENU "+------------------------+"
-#define CODE 3500
-
 void cleanInputBuffer();
+int getInt(int minValue, int maxValue, const char *msg);
+float getFloat(float minValue, float maxValue, const char *msg);
+char getChar(const char *msg);
+void readString(char *str, unsigned int size, const char *msg);
+
+typedef struct{
+    int dia;
+    int mes;
+    int ano;
+}data;
+
+typedef struct{
+    int id[11];
+    char nome[50];
+    int tele[10];
+    int nif[10];
+    data d;
+}cliente;
 
 #endif //INPUT_H
 
