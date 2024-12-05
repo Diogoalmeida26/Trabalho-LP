@@ -1,7 +1,7 @@
 #include "input.h"
 #include <stdio.h>
 #include <string.h>
-
+#include <ctype.h>
 void clearInputBuffer() {
     char ch;
     while ((ch = getchar()) != '\n' && ch != EOF);
@@ -50,4 +50,34 @@ void readString(char *str, unsigned int size, const char *msg) {
         }
     }
 }
+void lerNumeroNaoZero(char *numero, const char *msg) {
+    int valido = 0;
 
+    do {
+        printf("%s", msg);
+        readString(numero, 10, ""); // Tamanho 10: 9 dígitos + '\0'
+
+        // Verifica se tem exatamente 9 dígitos
+        int tamanho = strlen(numero);
+        if (tamanho != 9) {
+            puts("Erro: O número deve ter exatamente 9 dígitos.");
+            continue;
+        }
+
+        // Verifica se todos os caracteres são dígitos
+        valido = 1; // Assume que o número é válido
+        for (int i = 0; i < tamanho; i++) {
+            if (!isdigit(numero[i])) {
+                puts("Erro: Apenas números são permitidos.");
+                valido = 0;
+                break;
+            }
+        }
+
+        // Verifica se o primeiro dígito é 0
+        if (valido && numero[0] == '0') {
+            puts("Erro: O número não pode começar com zero.");
+            valido = 0;
+        }
+    } while (!valido);
+}
