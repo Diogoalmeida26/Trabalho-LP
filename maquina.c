@@ -1,31 +1,28 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include "maquina.h"
+#include "maquinas.h"
 
-// Lista dinâmica de máquinas
-Maquina *maquinas = NULL;
-int total_maquinas = 0;
+void criar_maquina(Maquina maquinas[], int *total_maquinas, const char *nome, const char *tipo) {
+    if (*total_maquinas >= MAX_MAQUINAS) {
+        printf("Limite máximo de máquinas alcançado.\n");
+        return;
+    }
 
-void criar_maquina() {
-    printf("\n--- Criar Máquina ---\n");
+    Maquina nova_maquina;
+    nova_maquina.id = *total_maquinas + 1;
+    strncpy(nova_maquina.nome, nome, TAM_NOME - 1);
+    nova_maquina.nome[TAM_NOME - 1] = '\0'; 
+    strncpy(nova_maquina.tipo, tipo, TAM_TIPO - 1);
+    nova_maquina.tipo[TAM_TIPO - 1] = '\0'; 
+    nova_maquina.tempo_total_producao = 0;
+    nova_maquina.processos_associados = 0;
 
-    // Realocação dinâmica para uma nova máquina
-    maquinas = realloc(maquinas, (total_maquinas + 1) * sizeof(Maquina));
-    Maquina *nova_maquina = &maquinas[total_maquinas];
-    nova_maquina->id = total_maquinas + 1;
-
-    printf("Nome da Máquina: ");
-    scanf(" %[^\n]s", nova_maquina->nome);
-
-    printf("Tipo da Máquina (Corte, Fresagem, CNC, etc.): ");
-    scanf(" %[^\n]s", nova_maquina->tipo);
-
-    total_maquinas++;
-    printf("Máquina cadastrada com sucesso!\n");
+    maquinas[*total_maquinas] = nova_maquina;
+    (*total_maquinas)++;
+    printf("Máquina criada com sucesso! ID: %d\n", nova_maquina.id);
 }
 
-void listar_maquinas() {
+void listar_maquinas(const Maquina maquinas[], int total_maquinas) {
     printf("\n--- Lista de Máquinas ---\n");
 
     if (total_maquinas == 0) {
@@ -34,59 +31,67 @@ void listar_maquinas() {
     }
 
     for (int i = 0; i < total_maquinas; i++) {
-        Maquina *m = &maquinas[i];
-        printf("ID: %d | Nome: %s | Tipo: %s\n", m->id, m->nome, m->tipo);
+        printf("ID: %d | Nome: %s | Tipo: %s | Tempo Total de Produção: %d min | Processos Associados: %d\n",
+               maquinas[i].id, maquinas[i].nome, maquinas[i].tipo,
+               maquinas[i].tempo_total_producao, maquinas[i].processos_associados);
     }
 }
 
-void atualizar_maquina() {
-    printf("\n--- Atualizar Máquina ---\n");
-    int id;
-    printf("Informe o ID da Máquina para atualizar: ");
-    scanf("%d", &id);
-
+void atualizar_maquina(Maquina maquinas[], int total_maquinas, int id, const char *novo_nome, const char *novo_tipo) {
     if (id <= 0 || id > total_maquinas) {
         printf("Máquina não encontrada.\n");
         return;
     }
 
-    Maquina *m = &maquinas[id - 1];
-    printf("Novo Nome (atual: %s): ", m->nome);
-    scanf(" %[^\n]s", m->nome);
+    int index = id - 1;
 
-    printf("Novo Tipo (atual: %s): ", m->tipo);
-    scanf(" %[^\n]s", m->tipo);
+    if (novo_nome != NULL) {
+        strncpy(maquinas[index].nome, novo_nome, TAM_NOME - 1);
+        maquinas[index].nome[TAM_NOME - 1] = '\0'; // Garantir terminação
+    }
+
+    if (novo_tipo != NULL) {
+        strncpy(maquinas[index].tipo, novo_tipo, TAM_TIPO - 1);
+        maquinas[index].tipo[TAM_TIPO - 1] = '\0'; // Garantir terminação
+    }
 
     printf("Máquina atualizada com sucesso!\n");
 }
 
-void excluir_maquina() {
-    printf("\n--- Excluir Máquina ---\n");
-    int id;
-    printf("Informe o ID da Máquina para excluir: ");
-    scanf("%d", &id);
-
-    if (id <= 0 || id > total_maquinas) {
+void excluir_maquina(Maquina maquinas[], int *total_maquinas, int id) {
+    if (id <= 0 || id > *total_maquinas) {
         printf("Máquina não encontrada.\n");
         return;
     }
 
-    for (int i = id; i < total_maquinas; i++) {
-        maquinas[i - 1] = maquinas[i];
+    for (int i = id - 1; i < *total_maquinas - 1; i++) {
+        maquinas[i] = maquinas[i + 1];
     }
 
-    total_maquinas--;
-    maquinas = realloc(maquinas, total_maquinas * sizeof(Maquina));
-
+    (*total_maquinas)--;
     printf("Máquina excluída com sucesso!\n");
 }
 
-void maquinas_mais_utilizadas() {
-    printf("\n--- Máquinas Mais Utilizadas ---\n");
-    printf("Função em desenvolvimento. Dependerá de integração com os processos dos produtos.\n");
-}
+void relatorio_maquinas_mais_utilizadas(const Maquina maquinas[], int total_maquinas) {
+    printf("\n--- Relatório: Máquinas Mais Utilizadas ---\n");
 
-void tempo_medio_por_maquina() {
-    printf("\n--- Tempo Médio por Máquina ---\n");
-    printf("Função em desenvolvimento. Dependerá de integração com os processos dos produtos.\n");
+    if (total_maquinas == 0) {
+        printf("Nenhuma máquina cadastrada.\n");
+        return;
+    }
+
+    int max_processos = 0;
+    for (int i = 0; i < total_maquinas; i++) {
+        if (maquinas[i].processos_associados > max_processos) {
+            max_processos = maquinas[i].processos_associados;
+        }
+    }
+
+    printf("Máquinas com o maior número de processos associados (%d):\n", max_processos);
+    for (int i = 0; i < total_maquinas; i++) {
+        if (maquinas[i].processos_associados == max_processos) {
+            printf("ID: %d | Nome: %s | Tipo: %s | Processos Associados: %d\n",
+                   maquinas[i].id, maquinas[i].nome, maquinas[i].tipo, maquinas[i].processos_associados);
+        }
+    }
 }
