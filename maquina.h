@@ -6,11 +6,11 @@
 #define TAM_NOME 50
 #define TAM_TIPO 20
 
-// Estrutura para representar uma máquina
+// Estrutura para uma máquina
 typedef struct {
     int id;
     char nome[TAM_NOME];
-    char tipo[TAM_TIPO]; // Exemplo: Corte, Injeção, Solda, etc.
+    char tipo[TAM_TIPO]; 
     int tempo_total_producao; // Em minutos
     int processos_associados; // Número de processos em que a máquina foi usada
 } Maquina;
