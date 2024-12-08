@@ -3,6 +3,7 @@
 #include "cliente.h"
 #include "encomendas.h"
 #include "input.h"
+#include "maquinas.h"
 
 #include <stdio.h>
 
@@ -254,3 +255,67 @@ void menu_encomendas() {
         }
     } while (opcao != 0);
 }
+
+void menu_maquinas() {
+    Maquina maquinas[MAX_MAQUINAS];
+    int total_maquinas = 0;
+    int opcao;
+
+    do {
+        printf("\n=== Menu de Gestão de Máquinas ===\n");
+        printf("1. Criar Máquina\n");
+        printf("2. Listar Máquinas\n");
+        printf("3. Atualizar Máquina\n");
+        printf("4. Excluir Máquina\n");
+        printf("5. Relatório: Máquinas Mais Utilizadas\n");
+        printf("0. Sair\n");
+        printf("Escolha uma opção: ");
+        scanf("%d", &opcao);
+
+        switch (opcao) {
+            case 1: {
+                char nome[TAM_NOME], tipo[TAM_TIPO];
+                printf("Nome da Máquina: ");
+                scanf("%s", nome); // Simplificado
+                printf("Tipo da Máquina (Ex.: Corte, Injeção, Solda): ");
+                scanf("%s", tipo); // Simplificado
+                criar_maquina(maquinas, &total_maquinas, nome, tipo);
+                break;
+            }
+            case 2:
+                listar_maquinas(maquinas, total_maquinas);
+                break;
+            case 3: {
+                int id;
+                char novo_nome[TAM_NOME], novo_tipo[TAM_TIPO];
+                printf("Informe o ID da Máquina a ser atualizada: ");
+                scanf("%d", &id);
+                printf("Novo Nome: ");
+                scanf("%s", novo_nome); // Simplificado
+                printf("Novo Tipo: ");
+                scanf("%s", novo_tipo); // Simplificado
+                atualizar_maquina(maquinas, total_maquinas, id, novo_nome, novo_tipo);
+                break;
+            }
+            case 4: {
+                int id;
+                printf("Informe o ID da Máquina a ser excluída: ");
+                scanf("%d", &id);
+                excluir_maquina(maquinas, &total_maquinas, id);
+                break;
+            }
+            case 5:
+                relatorio_maquinas_mais_utilizadas(maquinas, total_maquinas);
+                break;
+            case 0:
+                printf("Saindo do sistema...\n");
+                break;
+            default:
+                printf("Opção inválida. Tente novamente.\n");
+                break;
+        }
+    } while (opcao != 0);
+
+    return 0;
+}
+
