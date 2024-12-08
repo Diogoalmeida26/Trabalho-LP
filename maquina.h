@@ -1,19 +1,25 @@
-#ifndef MAQUINA_H
-#define MAQUINA_H
+#ifndef MAQUINAS_H
+#define MAQUINAS_H
+
+// Constantes
+#define MAX_MAQUINAS 100
+#define TAM_NOME 50
+#define TAM_TIPO 20
 
 // Estrutura para representar uma máquina
 typedef struct {
-    int id;            // ID único da máquina
-    char nome[50];     // Nome da máquina
-    char tipo[20];     // Tipo da máquina (ex.: Corte, Fresagem, CNC, etc.)
+    int id;
+    char nome[TAM_NOME];
+    char tipo[TAM_TIPO]; // Exemplo: Corte, Injeção, Solda, etc.
+    int tempo_total_producao; // Em minutos
+    int processos_associados; // Número de processos em que a máquina foi usada
 } Maquina;
 
-// Prototipação das funções CRUD e relatórios
-void criar_maquina();
-void listar_maquinas();
-void atualizar_maquina();
-void excluir_maquina();
-void maquinas_mais_utilizadas();
-void tempo_medio_por_maquina();
+// Funções relacionadas às máquinas
+void criar_maquina(Maquina maquinas[], int *total_maquinas);
+void listar_maquinas(const Maquina maquinas[], int total_maquinas);
+void atualizar_maquina(Maquina maquinas[], int total_maquinas);
+void excluir_maquina(Maquina maquinas[], int *total_maquinas);
+void relatorio_maquinas_mais_utilizadas(const Maquina maquinas[], int total_maquinas);
 
-#endif // MAQUINA_H
+#endif // MAQUINAS_H
