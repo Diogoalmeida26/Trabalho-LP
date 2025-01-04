@@ -1,321 +1,215 @@
-#include "menu.h"
-#include "produto.h"
-#include "cliente.h"
-#include "encomendas.h"
+#include "menus.h"
+#include "clientes.h"
+#include "espacos.h"
+#include "reservas.h"
+#include "equipamentos.h"
+#include "logs.h"
 #include "input.h"
-#include "maquinas.h"
-
 #include <stdio.h>
 
-// Submenu de Produtos
-void menu_produtos() {
-    int opcao, id, quantidade;
-    char nome[TAM_NOME_PROD], categoria[TAM_CATEGORIA];
-    char lista[MAX_PRODUTOS][TAM_NOME_PROD];
-    int total;
-
-    do {
-        printf("\n--- Menu de Produtos ---\n");
-        printf("1. Criar Produto\n");
-        printf("2. Listar Produtos\n");
-        printf("3. Listar Produtos por Categoria\n");
-        printf("4. Listar Produtos Menos Procurados\n");
-        printf("5. Excluir Produto\n");
-        printf("0. Voltar ao Menu Principal\n");
-        printf("Escolha uma opção: ");
-        scanf("%d", &opcao);
-        clearInputBuffer();
-
-        switch (opcao) {
-            case 1:
-                printf("ID: ");
-                scanf("%d", &id);
-                clearInputBuffer();
-                printf("Nome: ");
-                fgets(nome, TAM_NOME_PROD, stdin);
-                nome[strcspn(nome, "\n")] = '\0';
-                printf("Categoria: ");
-                fgets(categoria, TAM_CATEGORIA, stdin);
-                categoria[strcspn(categoria, "\n")] = '\0';
-                criar_produto(id, nome, categoria);
-                break;
-
-            case 2:
-                listar_produtos(lista, &total);
-                printf("Produtos:\n");
-                for (int i = 0; i < total; i++) {
-                    printf("%s\n", lista[i]);
-                }
-                break;
-
-            case 3:
-                printf("Categoria: ");
-                fgets(categoria, TAM_CATEGORIA, stdin);
-                categoria[strcspn(categoria, "\n")] = '\0';
-                produtos_por_categoria(categoria, lista, &total);
-                printf("Produtos na categoria %s:\n", categoria);
-                for (int i = 0; i < total; i++) {
-                    printf("%s\n", lista[i]);
-                }
-                break;
-
-            case 4:
-                produtos_menos_procurados(lista, &total);
-                printf("Produtos menos procurados:\n");
-                for (int i = 0; i < total; i++) {
-                    printf("%s\n", lista[i]);
-                }
-                break;
-
-            case 5:
-                printf("ID do produto a excluir: ");
-                scanf("%d", &id);
-                clearInputBuffer();
-                excluir_produto(id);
-                break;
-
-            case 0:
-                printf("Voltando ao menu principal...\n");
-                break;
-
-            default:
-                printf("Opção inválida!\n");
-        }
-    } while (opcao != 0);
-}
-
-// Submenu de Clientes
 void menu_clientes() {
-    int opcao, id;
-    char nome[TAM_NOME], contato[TAM_CONTATO], nif[TAM_NIF], data[TAM_DATA];
-    char lista[MAX_CLIENTES][TAM_NOME];
-    int total;
-
+    int opcao;
     do {
-        printf("\n--- Menu de Clientes ---\n");
-        printf("1. Criar Cliente\n");
+        printf("\n=== Menu de Clientes ===\n");
+        printf("1. Inserir Cliente\n");
         printf("2. Listar Clientes\n");
         printf("3. Atualizar Cliente\n");
-        printf("4. Excluir Cliente\n");
-        printf("5. Listar Clientes Mais Ativos\n");
-        printf("0. Voltar ao Menu Principal\n");
-        printf("Escolha uma opção: ");
-        scanf("%d", &opcao);
-        clearInputBuffer();
-
-        switch (opcao) {
-            case 1:
-                printf("ID: ");
-                scanf("%d", &id);
-                clearInputBuffer();
-                printf("Nome: ");
-                fgets(nome, TAM_NOME, stdin);
-                nome[strcspn(nome, "\n")] = '\0';
-                printf("Contato: ");
-                fgets(contato, TAM_CONTATO, stdin);
-                contato[strcspn(contato, "\n")] = '\0';
-                printf("NIF: ");
-                fgets(nif, TAM_NIF, stdin);
-                nif[strcspn(nif, "\n")] = '\0';
-                printf("Data de Registro (dd/mm/aaaa): ");
-                fgets(data, TAM_DATA, stdin);
-                data[strcspn(data, "\n")] = '\0';
-                criar_cliente(id, nome, contato, nif, data);
-                break;
-
-            case 2:
-                listar_clientes(lista, &total);
-                printf("Clientes:\n");
-                for (int i = 0; i < total; i++) {
-                    printf("%s\n", lista[i]);
-                }
-                break;
-
-            case 3:
-                printf("ID do cliente para atualizar: ");
-                scanf("%d", &id);
-                clearInputBuffer();
-                printf("Novo Contato: ");
-                fgets(contato, TAM_CONTATO, stdin);
-                contato[strcspn(contato, "\n")] = '\0';
-                atualizar_cliente(id, contato);
-                break;
-
-            case 4:
-                printf("ID do cliente a excluir: ");
-                scanf("%d", &id);
-                clearInputBuffer();
-                excluir_cliente(id);
-                break;
-
-            case 5:
-                clientes_mais_ativos(lista, &total);
-                printf("Clientes mais ativos:\n");
-                for (int i = 0; i < total; i++) {
-                    printf("%s\n", lista[i]);
-                }
-                break;
-
-            case 0:
-                printf("Voltando ao menu principal...\n");
-                break;
-
-            default:
-                printf("Opção inválida!\n");
-        }
-    } while (opcao != 0);
-}
-
-// Submenu de Encomendas
-void menu_encomendas() {
-    int opcao, id, cliente_id, estado, quantidade;
-    char data[TAM_DATA];
-    int lista_ids[MAX_ENCOMENDAS];
-    char lista_datas[MAX_ENCOMENDAS][TAM_DATA];
-    float taxa;
-
-    do {
-        printf("\n--- Menu de Encomendas ---\n");
-        printf("1. Criar Encomenda\n");
-        printf("2. Listar Encomendas\n");
-        printf("3. Listar Encomendas por Estado\n");
-        printf("4. Atualizar Encomenda\n");
-        printf("5. Excluir Encomenda\n");
-        printf("6. Relatório de Encomendas por Estado\n");
-        printf("0. Voltar ao Menu Principal\n");
-        printf("Escolha uma opção: ");
-        scanf("%d", &opcao);
-        clearInputBuffer();
-
-        switch (opcao) {
-            case 1:
-                printf("ID do Cliente: ");
-                scanf("%d", &cliente_id);
-                clearInputBuffer();
-                printf("Data (dd/mm/aaaa): ");
-                fgets(data, TAM_DATA, stdin);
-                data[strcspn(data, "\n")] = '\0';
-                printf("Prioridade (0: Baixa, 1: Média, 2: Alta): ");
-                scanf("%d", &estado);
-                criar_encomenda(cliente_id, data, estado);
-                break;
-
-            case 2:
-                listar_encomendas(lista_datas, &quantidade);
-                printf("Encomendas:\n");
-                for (int i = 0; i < quantidade; i++) {
-                    printf("Data: %s\n", lista_datas[i]);
-                }
-                break;
-
-            case 3:
-                printf("Estado (0: Aberta, 1: Produção, 2: Finalizada): ");
-                scanf("%d", &estado);
-                encomendas_por_estado(estado, lista_ids, &quantidade);
-                printf("Encomendas no estado %d:\n", estado);
-                for (int i = 0; i < quantidade; i++) {
-                    printf("ID: %d\n", lista_ids[i]);
-                }
-                break;
-
-            case 4:
-                printf("ID da Encomenda: ");
-                scanf("%d", &id);
-                printf("Novo Estado (0: Aberta, 1: Produção, 2: Finalizada): ");
-                scanf("%d", &estado);
-                if (estado == 1) {
-                    printf("Taxa de Cumprimento: ");
-                    scanf("%f", &taxa);
-                } else {
-                    taxa = 0.0;
-                }
-                atualizar_encomenda(id, estado, taxa);
-                break;
-
-            case 5:
-                printf("ID da Encomenda a excluir: ");
-                scanf("%d", &id);
-                excluir_encomenda(id);
-                break;
-
-            case 6: {
-                int abertas, producao, finalizadas;
-                relatorio_encomendas_por_estado(&abertas, &producao, &finalizadas);
-                printf("Relatório de Encomendas:\n");
-                printf("Abertas: %d, Produção: %d, Finalizadas: %d\n", abertas, producao, finalizadas);
-                break;
-            }
-
-            case 0:
-                printf("Voltando ao menu principal...\n");
-                break;
-
-            default:
-                printf("Opção inválida!\n");
-        }
-    } while (opcao != 0);
-}
-
-void menu_maquinas() {
-    Maquina maquinas[MAX_MAQUINAS];
-    int total_maquinas = 0;
-    int opcao;
-
-    do {
-        printf("\n=== Menu de Gestão de Máquinas ===\n");
-        printf("1. Criar Máquina\n");
-        printf("2. Listar Máquinas\n");
-        printf("3. Atualizar Máquina\n");
-        printf("4. Excluir Máquina\n");
-        printf("5. Relatório: Máquinas Mais Utilizadas\n");
-        printf("0. Sair\n");
-        printf("Escolha uma opção: ");
-        scanf("%d", &opcao);
+        printf("4. Remover Cliente\n");
+        printf("5. Voltar\n");
+        opcao = ler_inteiro("Escolha uma opção: ");
 
         switch (opcao) {
             case 1: {
-                char nome[TAM_NOME], tipo[TAM_TIPO];
-                printf("Nome da Máquina: ");
-                scanf("%s", nome); // Simplificado
-                printf("Tipo da Máquina (Ex.: Corte, Injeção, Solda): ");
-                scanf("%s", tipo); // Simplificado
-                criar_maquina(maquinas, &total_maquinas, nome, tipo);
+                char nome[TAMANHO_MAX_NOME];
+                char contato[TAMANHO_MAX_CONTATO];
+                char nif[TAMANHO_MAX_NIF];
+                ler_string("Nome: ", nome, TAMANHO_MAX_NOME);
+                ler_string("Contato: ", contato, TAMANHO_MAX_CONTATO);
+                ler_string("NIF: ", nif, TAMANHO_MAX_NIF);
+                inserir_cliente(nome, contato, nif);
                 break;
             }
             case 2:
-                listar_maquinas(maquinas, total_maquinas);
+                listar_clientes();
                 break;
             case 3: {
-                int id;
-                char novo_nome[TAM_NOME], novo_tipo[TAM_TIPO];
-                printf("Informe o ID da Máquina a ser atualizada: ");
-                scanf("%d", &id);
-                printf("Novo Nome: ");
-                scanf("%s", novo_nome); // Simplificado
-                printf("Novo Tipo: ");
-                scanf("%s", novo_tipo); // Simplificado
-                atualizar_maquina(maquinas, total_maquinas, id, novo_nome, novo_tipo);
+                int id = ler_inteiro("ID do cliente a atualizar: ");
+                atualizar_cliente(id);
                 break;
             }
             case 4: {
-                int id;
-                printf("Informe o ID da Máquina a ser excluída: ");
-                scanf("%d", &id);
-                excluir_maquina(maquinas, &total_maquinas, id);
+                int id = ler_inteiro("ID do cliente a remover: ");
+                remover_cliente(id);
                 break;
             }
             case 5:
-                relatorio_maquinas_mais_utilizadas(maquinas, total_maquinas);
-                break;
-            case 0:
-                printf("Saindo do sistema...\n");
+                printf("Voltando ao menu principal...\n");
                 break;
             default:
-                printf("Opção inválida. Tente novamente.\n");
-                break;
+                printf("Opção inválida.\n");
         }
-    } while (opcao != 0);
-
-    return 0;
+    } while (opcao != 5);
 }
 
+void menu_espacos() {
+    int opcao;
+    do {
+        printf("\n=== Menu de Espaços ===\n");
+        printf("1. Inserir Espaço\n");
+        printf("2. Listar Espaços\n");
+        printf("3. Atualizar Espaço\n");
+        printf("4. Remover Espaço\n");
+        printf("5. Voltar\n");
+        opcao = ler_inteiro("Escolha uma opção: ");
+
+        switch (opcao) {
+            case 1: {
+                char nome[TAMANHO_MAX_NOME];
+                int capacidade = ler_inteiro("Capacidade: ");
+                char tipo[TAMANHO_MAX_TIPO];
+                ler_string("Tipo: ", tipo, TAMANHO_MAX_TIPO);
+                inserir_espaco(nome, capacidade, tipo);
+                break;
+            }
+            case 2:
+                listar_espacos();
+                break;
+            case 3: {
+                int id = ler_inteiro("ID do espaço a atualizar: ");
+                atualizar_espaco(id);
+                break;
+            }
+            case 4: {
+                int id = ler_inteiro("ID do espaço a remover: ");
+                remover_espaco(id);
+                break;
+            }
+            case 5:
+                printf("Voltando ao menu principal...\n");
+                break;
+            default:
+                printf("Opção inválida.\n");
+        }
+    } while (opcao != 5);
+}
+
+void menu_reservas() {
+    int opcao;
+    do {
+        printf("\n=== Menu de Reservas ===\n");
+        printf("1. Inserir Reserva\n");
+        printf("2. Listar Reservas\n");
+        printf("3. Atualizar Reserva\n");
+        printf("4. Remover Reserva\n");
+        printf("5. Voltar\n");
+        opcao = ler_inteiro("Escolha uma opção: ");
+
+        switch (opcao) {
+            case 1: {
+                int cliente_id = ler_inteiro("ID do Cliente: ");
+                int espaco_id = ler_inteiro("ID do Espaço: ");
+                int duracao = ler_inteiro("Duração (em horas): ");
+                int participantes = ler_inteiro("Número de Participantes: ");
+                char estado[TAMANHO_MAX_ESTADO];
+                ler_string("Estado (Pendente, Confirmada, etc.): ", estado, TAMANHO_MAX_ESTADO);
+                inserir_reserva(cliente_id, espaco_id, duracao, participantes, estado);
+                break;
+            }
+            case 2:
+                listar_reservas();
+                break;
+            case 3: {
+                int id = ler_inteiro("ID da reserva a atualizar: ");
+                atualizar_reserva(id);
+                break;
+            }
+            case 4: {
+                int id = ler_inteiro("ID da reserva a remover: ");
+                remover_reserva(id);
+                break;
+            }
+            case 5:
+                printf("Voltando ao menu principal...\n");
+                break;
+            default:
+                printf("Opção inválida.\n");
+        }
+    } while (opcao != 5);
+}
+
+void menu_equipamentos() {
+    int opcao;
+    do {
+        printf("\n=== Menu de Equipamentos ===\n");
+        printf("1. Inserir Equipamento\n");
+        printf("2. Listar Equipamentos\n");
+        printf("3. Atualizar Equipamento\n");
+        printf("4. Remover Equipamento\n");
+        printf("5. Voltar\n");
+        opcao = ler_inteiro("Escolha uma opção: ");
+
+        switch (opcao) {
+            case 1: {
+                char nome[TAMANHO_MAX_NOME];
+                char tipo[TAMANHO_MAX_TIPO];
+                char estado[TAMANHO_MAX_ESTADO];
+                ler_string("Nome: ", nome, TAMANHO_MAX_NOME);
+                ler_string("Tipo: ", tipo, TAMANHO_MAX_TIPO);
+                ler_string("Estado: ", estado, TAMANHO_MAX_ESTADO);
+                inserir_equipamento(nome, tipo, estado);
+                break;
+            }
+            case 2:
+                listar_equipamentos();
+                break;
+            case 3: {
+                int id = ler_inteiro("ID do equipamento a atualizar: ");
+                atualizar_equipamento(id);
+                break;
+            }
+            case 4: {
+                int id = ler_inteiro("ID do equipamento a remover: ");
+                remover_equipamento(id);
+                break;
+            }
+            case 5:
+                printf("Voltando ao menu principal...\n");
+                break;
+            default:
+                printf("Opção inválida.\n");
+        }
+    } while (opcao != 5);
+}
+
+void menu_principal() {
+    int opcao;
+    do {
+        printf("\n=== Sistema de Gestão ===\n");
+        printf("1. Gerir Clientes\n");
+        printf("2. Gerir Espaços\n");
+        printf("3. Gerir Reservas\n");
+        printf("4. Gerir Equipamentos\n");
+        printf("5. Sair\n");
+        opcao = ler_inteiro("Escolha uma opção: ");
+
+        switch (opcao) {
+            case 1:
+                menu_clientes();
+                break;
+            case 2:
+                menu_espacos();
+                break;
+            case 3:
+                menu_reservas();
+                break;
+            case 4:
+                menu_equipamentos();
+                break;
+            case 5:
+                printf("Encerrando o sistema...\n");
+                break;
+            default:
+                printf("Opção inválida.\n");
+        }
+    } while (opcao != 5);
+}
