@@ -1,45 +1,30 @@
 #include "input.h"
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
-void clearInputBuffer() {
-    char ch;
-    while ((ch = getchar()) != '\n' && ch != EOF);
+#include <stdlib.h>
+
+void ler_string(const char *mensagem, char *destino, int tamanho) {
+    printf("%s", mensagem);
+    fgets(destino, tamanho, stdin);
+
+    // Remover '\n' ao final da string
+    size_t len = strlen(destino);
+    if (len > 0 && destino[len - 1] == '\n') {
+        destino[len - 1] = '\0';
+    }
 }
 
-int obterInteiro(int minValue, int maxValue, const char *msg) {
-    int value;
-    printf("%s", msg);
-    while (scanf("%d", &value) != 1 || value < minValue || value > maxValue) {
-        puts(VALOR_INVALIDO);
-        clearInputBuffer();
-        printf("%s", msg);
-    }
-    clearInputBuffer();
-    return value;
-}
-
-    
-    float obterFloat(float minValue, float maxValue, const char *msg) {
-    float value;
-    printf("%s", msg);
-    while (scanf("%f", &value) != 1 || value < minValue || value > maxValue) {
-        puts(VALOR_INVALIDO);
-        clearInputBuffer();
-        printf("%s", msg);
-    }
-    clearInputBuffer();
-    return value;
-}
-    
-void readString(char *str, unsigned int size, const char *msg) {
-    printf("%s", msg);
-    if (fgets(str, size, stdin) != NULL) {
-        unsigned int len = strlen(str) - 1;
-        if (str[len] == '\n') {
-            str[len] = '\0';
+int ler_inteiro(const char *mensagem) {
+    char buffer[50];
+    int valor;
+    while (1) {
+        printf("%s", mensagem);
+        fgets(buffer, sizeof(buffer), stdin);
+        if (sscanf(buffer, "%d", &valor) == 1) {
+            return valor;
         } else {
-            clearInputBuffer();
+            printf("Entrada inválida. Digite um número inteiro.\n");
         }
     }
 }
+
