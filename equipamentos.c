@@ -1,84 +1,113 @@
+#include "equipamentos.h"
+#include "logs.h"
+#include "input.h"
 #include <stdio.h>
-#include "encomendas.h"
+#include <stdlib.h>
+#include <string.h>
 
-// Arrays para armazenar informações das encomendas
-int encomenda_ids[MAX_ENCOMENDAS];
-int encomenda_clientes[MAX_ENCOMENDAS];
-char encomenda_datas_criacao[MAX_ENCOMENDAS][TAM_DATA];
-int encomenda_prioridades[MAX_ENCOMENDAS]; // 0: Baixa, 1: Média, 2: Alta
-int encomenda_estados[MAX_ENCOMENDAS]; // 0: Aberta, 1: Produção, 2: Finalizada
-float encomenda_taxas_cumprimento[MAX_ENCOMENDAS];
-int total_encomendas_registradas = 0;
+Equipamento *head_equipamentos = NULL;
 
-// Função para criar uma nova encomenda
-void criar_encomenda(int cliente_id, const char data[TAM_DATA], int prioridade) {
-    if (total_encomendas_registradas < MAX_ENCOMENDAS) {
-        int index = total_encomendas_registradas;
-        encomenda_ids[index] = index + 1;
-        encomenda_clientes[index] = cliente_id;
+Equipamento *criar_equipamento(int id, const char *nome, const char *tipo, const char *estado) {
+    Equipamento *novo = (Equipamento *)malloc(sizeof(Equipamento));
+    if (!novo) {
+        perror("Erro ao alocar memória para equipamento");
+        exit(EXIT_FAILURE);
+    }
+    novo->id = id;
+    strncpy(novo->nome, nome, TAMANHO_MAX_NOME);
+    strncpy(novo->tipo, tipo, TAMANHO_MAX_TIPO);
+    strncpy(novo->estado, estado, TAMANHO_MAX_ESTADO);
+    novo->proximo = NULL;
+    return novo;
+}
 
-        for (int i = 0; i < TAM_DATA; i++) {
-            encomenda_datas_criacao[index][i] = data[i];
-            if (data[i] == '\0') break;
+void inserir_equipamento(const char *nome, const char *tipo, const char *estado) {
+    static int id = 0;
+    id++;
+
+    Equipamento *novo = criar_equipamento(id, nome, tipo, estado);
+    if (!head_equipamentos) {
+        head_equipamentos = novo;
+    } else {
+        Equipamento *atual = head_equipamentos;
+        while (atual->proximo) {
+            atual = atual->proximo;
         }
+        atual->proximo = novo;
+    }
+    printf("Equipamento criado com sucesso! ID: %d\n", id);
 
-        encomenda_prioridades[index] = prioridade;
-        encomenda_estados[index] = 0; // Estado inicial: Aberta
-        encomenda_taxas_cumprimento[index] = 0.0;
+    char log_desc[200];
+    sprintf(log_desc, "Equipamento criado - ID: %d, Nome: %s", id, nome);
+    registrar_log("CRIAR EQUIPAMENTO", log_desc);
+}
 
-        total_encomendas_registradas++;
+void listar_equipamentos() {
+    if (!head_equipamentos) {
+        printf("Nenhum equipamento cadastrado.\n");
+        return;
+    }
+    Equipamento *atual = head_equipamentos;
+    printf("ID\tNome\t\tTipo\t\tEstado\n");
+    while (atual) {
+        printf("%d\t%s\t\t%s\t\t%s\n", atual->id, atual->nome, atual->tipo, atual->estado);
+        atual = atual->proximo;
     }
 }
 
-// Função para listar todas as encomendas
-void listar_encomendas(char lista[MAX_ENCOMENDAS][TAM_DATA], int *quantidade) {
-    *quantidade = total_encomendas_registradas;
-    for (int i = 0; i < total_encomendas_registradas; i++) {
-        for (int j = 0; j < TAM_DATA; j++) {
-            lista[i][j] = encomenda_datas_criacao[i][j];
+void atualizar_equipamento(int id) {
+    Equipamento *atual = head_equipamentos;
+    while (atual) {
+        if (atual->id == id) {
+            printf("Atualizando equipamento ID %d:\n", id);
+            ler_string("Novo nome: ", atual->nome, TAMANHO_MAX_NOME);
+            ler_string("Novo tipo: ", atual->tipo, TAMANHO_MAX_TIPO);
+            ler_string("Novo estado (Disponível, Reservado, etc.): ", atual->estado, TAMANHO_MAX_ESTADO);
+            printf("Equipamento atualizado com sucesso!\n");
+
+            char log_desc[200];
+            sprintf(log_desc, "Equipamento atualizado - ID: %d, Nome: %s", id, atual->nome);
+            registrar_log("ATUALIZAR EQUIPAMENTO", log_desc);
+            return;
         }
+        atual = atual->proximo;
     }
+    printf("Equipamento com ID %d não encontrado.\n", id);
 }
 
-// Função para listar encomendas por estado
-void encomendas_por_estado(int estado, int ids_filtrados[MAX_ENCOMENDAS], int *quantidade) {
-    *quantidade = 0;
-    for (int i = 0; i < total_encomendas_registradas; i++) {
-        if (encomenda_estados[i] == estado) {
-            ids_filtrados[*quantidade] = encomenda_ids[i];
-            (*quantidade)++;
-        }
-    }
-}
+void remover_equipamento(int id) {
+    Equipamento *atual = head_equipamentos;
+    Equipamento *anterior = NULL;
 
-// Função para atualizar o estado de uma encomenda
-void atualizar_encomenda(int id, int novo_estado, float nova_taxa) {
-    if (id > 0 && id <= total_encomendas_registradas) {
-        int index = id - 1;
-        encomenda_estados[index] = novo_estado;
-        if (novo_estado == 2) { // Finalizada
-            encomenda_taxas_cumprimento[index] = 100.0;
-        } else if (novo_estado == 1) { // Em Produção
-            encomenda_taxas_cumprimento[index] = nova_taxa;
-        }
-    }
-}
-
-// Função para excluir uma encomenda
-void excluir_encomenda(int id) {
-    if (id > 0 && id <= total_encomendas_registradas) {
-        for (int i = id - 1; i < total_encomendas_registradas - 1; i++) {
-            encomenda_ids[i] = encomenda_ids[i + 1];
-            encomenda_clientes[i] = encomenda_clientes[i + 1];
-
-            for (int j = 0; j < TAM_DATA; j++) {
-                encomenda_datas_criacao[i][j] = encomenda_datas_criacao[i + 1][j];
+    while (atual) {
+        if (atual->id == id) {
+            if (anterior) {
+                anterior->proximo = atual->proximo;
+            } else {
+                head_equipamentos = atual->proximo;
             }
+            free(atual);
+            printf("Equipamento com ID %d removido.\n", id);
 
-            encomenda_prioridades[i] = encomenda_prioridades[i + 1];
-            encomenda_estados[i] = encomenda_estados[i + 1];
-            encomenda_taxas_cumprimento[i] = encomenda_taxas_cumprimento[i + 1];
+            char log_desc[200];
+            sprintf(log_desc, "Equipamento removido - ID: %d", id);
+            registrar_log("REMOVER EQUIPAMENTO", log_desc);
+            return;
         }
-        total_encomendas_registradas--;
+        anterior = atual;
+        atual = atual->proximo;
     }
+    printf("Equipamento com ID %d não encontrado.\n", id);
 }
+
+void liberar_equipamentos() {
+    Equipamento *atual = head_equipamentos;
+    while (atual) {
+        Equipamento *temp = atual;
+        atual = atual->proximo;
+        free(temp);
+    }
+    head_equipamentos = NULL;
+    
+}
+
