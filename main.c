@@ -1,35 +1,25 @@
-#include "menu.h"
+#include "menus.h"
+#include "clientes.h"
+#include "espacos.h"
+#include "reservas.h"
+#include "equipamentos.h"
+#include "logs.h"
 #include <stdio.h>
-#include "input.h"
 
 int main() {
-    int opcao;
+    // Mensagem de inicialização
+    printf("=== Sistema de Gestão de Reservas ===\n");
+    printf("Carregando o sistema...\n");
 
-    do {
-        printf("\n--- Sistema de Gestão de Encomendas ---\n");
-        printf("1. Menu de Produtos\n");
-        printf("2. Menu de Clientes\n");
-        printf("0. Sair\n");
-        printf("Escolha uma opção: ");
-        scanf("%d", &opcao);
-        cleanInputBuffer();
-        switch (opcao) {
-            case 1:
-                menu_produtos();
-                break;
+    // Menu principal
+    menu_principal();
 
-            case 2:
-                menu_clientes();
-                break;
+    // Liberação de memória antes de encerrar o programa
+    liberar_clientes();
+    liberar_espacos();
+    liberar_reservas();
+    liberar_equipamentos();
 
-            case 0:
-                printf("Saindo do sistema...\n");
-                break;
-
-            default:
-                printf("Opção inválida! Tente novamente.\n");
-        }
-    } while (opcao != 0);
-
+    printf("Sistema encerrado com sucesso.\n");
     return 0;
 }
