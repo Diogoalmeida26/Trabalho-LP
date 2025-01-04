@@ -1,125 +1,128 @@
-#include "cliente.h"
+#include "clientes.h"
+#include "logs.h"
+#include "input.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+#include <time.h>
 
-// Array estático para armazenar os clientes e o contador de clientes
-Cliente clientes[MAX_CLIENTES];
-int total_clientes_cadastrados = 0;
+Cliente *head_clientes = NULL;
 
-// Inicializa o sistema de clientes
-void inicializar_clientes() {
-    total_clientes_cadastrados = 0;
-    for (int i = 0; i < MAX_CLIENTES; i++) {
-        clientes[i].id = -1;
-        strcpy(clientes[i].nome, "");
-        strcpy(clientes[i].telemovel, "");
-        strcpy(clientes[i].nif, "");
-        clientes[i].data_registro.dia = 0;
-        clientes[i].data_registro.mes = 0;
-        clientes[i].data_registro.ano = 0;
-        clientes[i].atividades = 0;
+Cliente *criar_cliente(int id, const char *nome, const char *contato, const char *nif) {
+    Cliente *novo = (Cliente *)malloc(sizeof(Cliente));
+    if (!novo) {
+        perror("Erro ao alocar memória para cliente");
+        exit(EXIT_FAILURE);
     }
+    novo->id = id;
+    strncpy(novo->nome, nome, TAMANHO_MAX_NOME);
+    strncpy(novo->contato, contato, TAMANHO_MAX_CONTATO);
+    strncpy(novo->nif, nif, TAMANHO_MAX_NIF);
+    novo->data_registro = time(NULL);
+    novo->proximo = NULL;
+    return novo;
 }
 
-// Cria um novo cliente
-void criar_cliente() {
-    if (total_clientes_cadastrados >= MAX_CLIENTES) {
-        puts("Erro: Limite de clientes atingido.");
-        return;
+void inserir_cliente(const char *nome, const char *contato, const char *nif) {
+    int id = 0;
+    id++;
+
+    Cliente *novo = criar_cliente(id, nome, contato, nif);
+    if (!head_clientes) {
+        head_clientes = novo;
+    } else {
+        Cliente *atual = head_clientes;
+        while (atual->proximo) {
+            atual = atual->proximo;
+        }
+        atual->proximo = novo;
     }
+    printf("Cliente criado com sucesso! ID: %d\n", id);
 
-    Cliente novo_cliente;
-    novo_cliente.id = total_clientes_cadastrados + 1;
-
-    readString(novo_cliente.nome, TAM_NOME, "Digite o nome do cliente: ");
-    lerNumeroNaoZero(novo_cliente.telemovel, "Digite o número de telemóvel (9 dígitos, sem começar com 0): ");
-    lerNumeroNaoZero(novo_cliente.nif, "Digite o NIF (9 dígitos, sem começar com 0): ");
-
-    printf("Digite a data de registro (dd mm aaaa): ");
-    novo_cliente.data_registro.dia = getInt(1, 31, "");
-    novo_cliente.data_registro.mes = getInt(1, 12, "");
-    novo_cliente.data_registro.ano = getInt(1900, 2100, "");
-
-    novo_cliente.atividades = 0;
-
-    clientes[total_clientes_cadastrados] = novo_cliente;
-    total_clientes_cadastrados++;
-    puts("Cliente cadastrado com sucesso!");
+    char log_desc[200];
+    printf(log_desc, "Cliente criado - ID: %d, Nome: %s", id, nome);
+    registrar_log("CRIAR CLIENTE", log_desc);
+    
 }
 
-// Lista todos os clientes
 void listar_clientes() {
-    if (total_clientes_cadastrados == 0) {
-        puts("Nenhum cliente cadastrado.");
+    if (!head_clientes) {
+        printf("Nenhum cliente cadastrado.\n");
         return;
     }
-
-    puts("\n--- Lista de Clientes ---");
-    for (int i = 0; i < total_clientes_cadastrados; i++) {
-        Cliente c = clientes[i];
-        printf("ID: %d | Nome: %s | Telemóvel: %s | NIF: %s | Data de Registro: %02d/%02d/%04d | Encomendas: %d\n",
-               c.id, c.nome, c.telemovel, c.nif,
-               c.data_registro.dia, c.data_registro.mes, c.data_registro.ano,
-               c.atividades);
+    Cliente *atual = head_clientes;
+    printf("ID\tNome\tContato\tNIF\tData Registro\n");
+    while (atual) {
+        char data_formatada[20];
+        strftime(data_formatada, sizeof(data_formatada), "%d/%m/%Y", localtime(&atual->data_registro));
+        printf("%d\t%s\t%s\t%s\t%s\n", atual->id, atual->nome, atual->contato, atual->nif, data_formatada);
+        atual = atual->proximo;
     }
 }
 
-// Atualiza os dados de um cliente
-void atualizar_cliente() {
-    int id = getInt(1, total_clientes_cadastrados, "Digite o ID do cliente que deseja atualizar: ");
-    for (int i = 0; i < total_clientes_cadastrados; i++) {
-        if (clientes[i].id == id) {
-            readString(clientes[i].nome, TAM_NOME, "Digite o novo nome do cliente: ");
-            lerNumeroNaoZero(clientes[i].telemovel, "Digite o novo número de telemóvel (9 dígitos, sem começar com 0): ");
-            puts("Dados do cliente atualizados com sucesso!");
+void atualizar_cliente(int id) {
+    Cliente *atual = head_clientes;
+    while (atual) {
+        if (atual->id == id) {
+            printf("Atualizando cliente ID %d:\n", id);
+            ler_string("Novo nome: ", atual->nome, TAMANHO_MAX_NOME);
+            ler_string("Novo contato: ", atual->contato, TAMANHO_MAX_CONTATO);
+            ler_string("Novo NIF: ", atual->nif, TAMANHO_MAX_NIF);
+            printf("Cliente atualizado com sucesso!\n");
+
+            char log_desc[200];
+            printf(log_desc, "Cliente atualizado - ID: %d, Nome: %s", id, atual->nome);
+            registrar_log("ATUALIZAR CLIENTE", log_desc);
             return;
         }
+        atual = atual->proximo;
     }
-    puts("Erro: Cliente não encontrado.");
+    printf("Cliente com ID %d não encontrado.\n", id);
 }
 
-// Exclui um cliente
-void excluir_cliente() {
-    int id = getInt(1, total_clientes_cadastrados, "Digite o ID do cliente que deseja excluir: ");
-    for (int i = 0; i < total_clientes_cadastrados; i++) {
-        if (clientes[i].id == id) {
-            // Reorganiza o array, movendo os elementos seguintes para a esquerda
-            for (int j = i; j < total_clientes_cadastrados - 1; j++) {
-                clientes[j] = clientes[j + 1];
+void remover_cliente(int id) {
+    Cliente *atual = head_clientes;
+    Cliente *anterior = NULL;
+
+    while (atual) {
+        if (atual->id == id) {
+            if (anterior) {
+                anterior->proximo = atual->proximo;
+            } else {
+                head_clientes = atual->proximo;
             }
-            total_clientes_cadastrados--;
-            puts("Cliente excluído com sucesso!");
+            free(atual);
+            printf("Cliente com ID %d removido.\n", id);
+
+            char log_desc[200];
+            printf(log_desc, "Cliente removido - ID: %d", id);
+            registrar_log("REMOVER CLIENTE", log_desc);
             return;
         }
+        anterior = atual;
+        atual = atual->proximo;
     }
-    puts("Erro: Cliente não encontrado.");
+    printf("Cliente com ID %d não encontrado.\n", id);
 }
 
-// Exibe o total de clientes cadastrados
-void total_clientes() {
-    printf("Total de clientes cadastrados: %d\n", total_clientes_cadastrados);
+void liberar_clientes() {
+    Cliente *atual = head_clientes;
+    while (atual) {
+        Cliente *temp = atual;
+        atual = atual->proximo;
+        free(temp);
+    }
+    head_clientes = NULL;
+    
 }
 
-// Lista os clientes mais ativos
-void clientes_mais_ativos() {
-    if (total_clientes_cadastrados == 0) {
-        puts("Nenhum cliente cadastrado.");
-        return;
-    }
-
-    int maior_atividade = clientes[0].atividades;
-    for (int i = 1; i < total_clientes_cadastrados; i++) {
-        if (clientes[i].atividades > maior_atividade) {
-            maior_atividade = clientes[i].atividades;
+int cliente_existe(int cliente_id) {
+    Cliente *atual = head_clientes;
+    while(atual) {
+        if(atual->id == cliente_id) {
+            return 1;
         }
-    }
-
-    puts("\n--- Clientes Mais Ativos ---");
-    for (int i = 0; i < total_clientes_cadastrados; i++) {
-        if (clientes[i].atividades == maior_atividade) {
-            printf("ID: %d | Nome: %s | Telemóvel: %s | Encomendas: %d\n",
-                   clientes[i].id, clientes[i].nome, clientes[i].telemovel, clientes[i].atividades);
+        atual = atual->proximo;
         }
+    return 0;
     }
-}
