@@ -1,18 +1,22 @@
-#ifndef PRODUTO_H
-#define PRODUTO_H
+#ifndef RESERVAS_H
+#define RESERVAS_H
 
-// Máximo de produtos e tamanho máximo dos campos
-#define MAX_PRODUTOS 100
-#define TAM_NOME_PROD 50
-#define TAM_CATEGORIA 30
+#define TAMANHO_MAX_ESTADO 20
 
-// Protótipos das funções relacionadas a produtos
-void criar_produto();
-void listar_produtos();
-void atualizar_produto();
-void excluir_produto();
-void total_produtos();
-void produtos_por_categoria();
-void produtos_mais_menos_procurados();
+typedef struct Reserva {
+    int id;
+    int cliente_id;
+    int espaco_id;
+    int duracao;  // Em horas
+    int participantes;
+    char estado[TAMANHO_MAX_ESTADO]; // Ex: Pendente, Confirmada
+    struct Reserva *proximo;
+} Reserva;
 
-#endif // PRODUTO_H
+void inserir_reserva(int cliente_id, int espaco_id, int duracao, int participantes, const char *estado);
+void listar_reservas();
+void atualizar_reserva(int id);
+void remover_reserva(int id);
+void liberar_reservas();
+
+#endif
