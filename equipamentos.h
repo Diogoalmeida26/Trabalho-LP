@@ -1,16 +1,22 @@
-#ifndef ENCOMENDAS_H
-#define ENCOMENDAS_H
+#ifndef EQUIPAMENTOS_H
+#define EQUIPAMENTOS_H
 
-// Máximo de encomendas e tamanho máximo dos campos
-#define MAX_ENCOMENDAS 100
-#define TAM_DATA 11
+#define TAMANHO_MAX_NOME 100
+#define TAMANHO_MAX_TIPO 50
+#define TAMANHO_MAX_ESTADO 20
 
-// Funções relacionadas a encomendas
-void criar_encomenda();
-void listar_encomendas();
-void atualizar_encomenda();
-void excluir_encomenda();
-void relatorio_encomendas_por_estado();
-void calcular_tempo_medio_producao();
+typedef struct Equipamento {
+    int id;
+    char nome[TAMANHO_MAX_NOME];
+    char tipo[TAMANHO_MAX_TIPO];
+    char estado[TAMANHO_MAX_ESTADO]; // Ex: Disponível, Reservado, Em manutenção
+    struct Equipamento *proximo;
+} Equipamento;
 
-#endif // ENCOMENDAS_H
+void inserir_equipamento(const char *nome, const char *tipo, const char *estado);
+void listar_equipamentos();
+void atualizar_equipamento(int id);
+void remover_equipamento(int id);
+void liberar_equipamentos();
+
+#endif
