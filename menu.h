@@ -1,10 +1,11 @@
 #ifndef MENU_H
 #define MENU_H
 
-// Protótipos das funções do menu
-void menu_produtos();
+void menu_principal();
 void menu_clientes();
-void menu_encomendas();
-void menu_maquinas();
+void menu_espacos();
+void menu_reservas();
+void menu_equipamentos();
+void menu_relatorios();
 
-#endif // MENU_H
+#endif
