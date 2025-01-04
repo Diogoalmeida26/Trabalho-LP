@@ -1,97 +1,124 @@
+#include "espacos.h"
+#include "logs.h"
+#include "input.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include "maquinas.h"
 
-void criar_maquina(Maquina maquinas[], int *total_maquinas, const char *nome, const char *tipo) {
-    if (*total_maquinas >= MAX_MAQUINAS) {
-        printf("Limite máximo de máquinas alcançado.\n");
-        return;
+Espaco *head_espacos = NULL;
+
+Espaco *criar_espaco(int id, const char *nome, int capacidade, const char *tipo) {
+    Espaco *novo = (Espaco *)malloc(sizeof(Espaco));
+    if (!novo) {
+        perror("Erro ao alocar memória para espaço");
+        exit(EXIT_FAILURE);
     }
-
-    Maquina nova_maquina;
-    nova_maquina.id = *total_maquinas + 1;
-    strncpy(nova_maquina.nome, nome, TAM_NOME - 1);
-    nova_maquina.nome[TAM_NOME - 1] = '\0'; 
-    strncpy(nova_maquina.tipo, tipo, TAM_TIPO - 1);
-    nova_maquina.tipo[TAM_TIPO - 1] = '\0'; 
-    nova_maquina.tempo_total_producao = 0;
-    nova_maquina.processos_associados = 0;
-
-    maquinas[*total_maquinas] = nova_maquina;
-    (*total_maquinas)++;
-    printf("Máquina criada com sucesso! ID: %d\n", nova_maquina.id);
+    novo->id = id;
+    strncpy(novo->nome, nome, TAMANHO_MAX_NOME);
+    novo->capacidade = capacidade;
+    strncpy(novo->tipo, tipo, TAMANHO_MAX_TIPO);
+    novo->proximo = NULL;
+    return novo;
 }
 
-void listar_maquinas(const Maquina maquinas[], int total_maquinas) {
-    printf("\n--- Lista de Máquinas ---\n");
+void inserir_espaco(const char *nome, int capacidade, const char *tipo) {
+    static int id = 0;
+    id++;
 
-    if (total_maquinas == 0) {
-        printf("Nenhuma máquina cadastrada.\n");
-        return;
-    }
-
-    for (int i = 0; i < total_maquinas; i++) {
-        printf("ID: %d | Nome: %s | Tipo: %s | Tempo Total de Produção: %d min | Processos Associados: %d\n",
-               maquinas[i].id, maquinas[i].nome, maquinas[i].tipo,
-               maquinas[i].tempo_total_producao, maquinas[i].processos_associados);
-    }
-}
-
-void atualizar_maquina(Maquina maquinas[], int total_maquinas, int id, const char *novo_nome, const char *novo_tipo) {
-    if (id <= 0 || id > total_maquinas) {
-        printf("Máquina não encontrada.\n");
-        return;
-    }
-
-    int index = id - 1;
-
-    if (novo_nome != NULL) {
-        strncpy(maquinas[index].nome, novo_nome, TAM_NOME - 1);
-        maquinas[index].nome[TAM_NOME - 1] = '\0'; // Garantir terminação
-    }
-
-    if (novo_tipo != NULL) {
-        strncpy(maquinas[index].tipo, novo_tipo, TAM_TIPO - 1);
-        maquinas[index].tipo[TAM_TIPO - 1] = '\0'; // Garantir terminação
-    }
-
-    printf("Máquina atualizada com sucesso!\n");
-}
-
-void excluir_maquina(Maquina maquinas[], int *total_maquinas, int id) {
-    if (id <= 0 || id > *total_maquinas) {
-        printf("Máquina não encontrada.\n");
-        return;
-    }
-
-    for (int i = id - 1; i < *total_maquinas - 1; i++) {
-        maquinas[i] = maquinas[i + 1];
-    }
-
-    (*total_maquinas)--;
-    printf("Máquina excluída com sucesso!\n");
-}
-
-void relatorio_maquinas_mais_utilizadas(const Maquina maquinas[], int total_maquinas) {
-    printf("\n--- Relatório: Máquinas Mais Utilizadas ---\n");
-
-    if (total_maquinas == 0) {
-        printf("Nenhuma máquina cadastrada.\n");
-        return;
-    }
-
-    int max_processos = 0;
-    for (int i = 0; i < total_maquinas; i++) {
-        if (maquinas[i].processos_associados > max_processos) {
-            max_processos = maquinas[i].processos_associados;
+    Espaco *novo = criar_espaco(id, nome, capacidade, tipo);
+    if (!head_espacos) {
+        head_espacos = novo;
+    } else {
+        Espaco *atual = head_espacos;
+        while (atual->proximo) {
+            atual = atual->proximo;
         }
+        atual->proximo = novo;
     }
+    printf("Espaço criado com sucesso! ID: %d\n", id);
 
-    printf("Máquinas com o maior número de processos associados (%d):\n", max_processos);
-    for (int i = 0; i < total_maquinas; i++) {
-        if (maquinas[i].processos_associados == max_processos) {
-            printf("ID: %d | Nome: %s | Tipo: %s | Processos Associados: %d\n",
-                   maquinas[i].id, maquinas[i].nome, maquinas[i].tipo, maquinas[i].processos_associados);
-        }
+    char log_desc[200];
+    sprintf(log_desc, "Espaço criado - ID: %d, Nome: %s", id, nome);
+    registrar_log("CRIAR ESPAÇO", log_desc);
+}
+
+void listar_espacos() {
+    if (!head_espacos) {
+        printf("Nenhum espaço cadastrado.\n");
+        return;
+    }
+    Espaco *atual = head_espacos;
+    printf("ID\tNome\tCapacidade\tTipo\n");
+    while (atual) {
+        printf("%d\t%s\t%d\t%s\n", atual->id, atual->nome, atual->capacidade, atual->tipo);
+        atual = atual->proximo;
     }
 }
+
+void atualizar_espaco(int id) {
+    Espaco *atual = head_espacos;
+    while (atual) {
+        if (atual->id == id) {
+            printf("Atualizando espaço ID %d:\n", id);
+            ler_string("Novo nome: ", atual->nome, TAMANHO_MAX_NOME);
+            atual->capacidade = ler_inteiro("Nova capacidade: ");
+            ler_string("Novo tipo: ", atual->tipo, TAMANHO_MAX_TIPO);
+            printf("Espaço atualizado com sucesso!\n");
+
+            char log_desc[200];
+            sprintf(log_desc, "Espaço atualizado - ID: %d, Nome: %s", id, atual->nome);
+            registrar_log("ATUALIZAR ESPAÇO", log_desc);
+            return;
+        }
+        atual = atual->proximo;
+    }
+    printf("Espaço com ID %d não encontrado.\n", id);
+}
+
+void remover_espaco(int id) {
+    Espaco *atual = head_espacos;
+    Espaco *anterior = NULL;
+
+    while (atual) {
+        if (atual->id == id) {
+            if (anterior) {
+                anterior->proximo = atual->proximo;
+            } else {
+                head_espacos = atual->proximo;
+            }
+            free(atual);
+            printf("Espaço com ID %d removido.\n", id);
+
+            char log_desc[200];
+            sprintf(log_desc, "Espaço removido - ID: %d", id);
+            registrar_log("REMOVER ESPAÇO", log_desc);
+            return;
+        }
+        anterior = atual;
+        atual = atual->proximo;
+    }
+    printf("Espaço com ID %d não encontrado.\n", id);
+}
+
+void liberar_espacos() {
+    Espaco *atual = head_espacos;
+    while (atual) {
+        Espaco *temp = atual;
+        atual = atual->proximo;
+        free(temp);
+    }
+    head_espacos = NULL;
+    
+}
+
+int espaco_existe(int espaco_id) {
+    Espaco *atual = head_espacos;
+    while(atual) {
+        if(atual->id == espaco_id) {
+            return 1;
+        }
+        atual = atual->proximo;
+    }
+    return 0;
+}
+
