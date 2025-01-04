@@ -1,19 +1,26 @@
-#ifndef CLIENTE_H
-#define CLIENTE_H
+#ifndef CLIENTES_H
+#define CLIENTES_H
 
-// Máximo de clientes e tamanho máximo dos campos
-#define MAX_CLIENTES 100
-#define TAM_NOME 50
-#define TAM_CONTATO 50
-#define TAM_NIF 15
-#define TAM_DATA 11
+#include <time.h>
+#define TAMANHO_MAX_NOME 100
+#define TAMANHO_MAX_CONTATO 150
+#define TAMANHO_MAX_NIF 11
 
-// Protótipos das funções relacionadas a clientes
-void criar_cliente();
+typedef struct Cliente {
+    int id;
+    char nome[TAMANHO_MAX_NOME];
+    char contato[TAMANHO_MAX_CONTATO];
+    char nif[TAMANHO_MAX_NIF];
+    time_t data_registro;
+    struct Cliente *proximo;
+} Cliente;
+
+void inserir_cliente(const char *nome, const char *contato, const char *nif);
 void listar_clientes();
-void atualizar_cliente();
-void excluir_cliente();
-void total_clientes();
-void clientes_mais_ativos();
+void atualizar_cliente(int id);
+void remover_cliente(int id);
+void liberar_clientes();
 
-#endif // CLIENTE_H
+int cliente_existe(int cliente_id);
+
+#endif
